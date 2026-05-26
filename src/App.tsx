@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import {
   Menu, X, CheckCircle2, Database, Globe, Settings, BarChart3,
@@ -6,23 +6,103 @@ import {
   ChevronDown, Zap, Shield, Cpu, Code, TestTube2, Server,
   Package, Truck, Clock, TrendingUp, Award, ArrowRight,
   Play, ExternalLink, Box, Warehouse, Forklift, Boxes,
-  ArrowRightLeft, ShoppingCart, Ship, Building2, ScanLine
+  ArrowRightLeft, ShoppingCart, Ship, Building2, ScanLine,
+  Activity, Radio, Loader2, Check, AlertCircle
 } from 'lucide-react';
 
 const navItems = ['Services', 'Warehouse Flow', 'IBM Sterling', 'Expertise', 'Team', 'Contact'];
 
-// Warehouse Operations Stages
-const warehouseStages = [
-  { id: 'truck', icon: Truck, label: 'Inbound Truck', status: 'Arriving', zone: 'Dock' },
-  { id: 'unload', icon: Box, label: 'Dock Unloading', status: 'Unloading', zone: 'Dock' },
-  { id: 'receive', icon: ScanLine, label: 'Receiving', status: 'Receiving', zone: 'Receiving Area' },
-  { id: 'putaway', icon: Forklift, label: 'Putaway', status: 'Moving', zone: 'Storage Aisle' },
-  { id: 'storage', icon: Boxes, label: 'Storage', status: 'Storing', zone: 'Storage Location' },
-  { id: 'replenish', icon: ArrowRightLeft, label: 'Replenishment', status: 'Replenishing', zone: 'Pick Zone' },
-  { id: 'pick', icon: ShoppingCart, label: 'Picking', status: 'Picking', zone: 'Pick Zone' },
-  { id: 'pack', icon: Package, label: 'Packing', status: 'Packing', zone: 'Pack Station' },
-  { id: 'conveyor', icon: Building2, label: 'Conveyor', status: 'Moving', zone: 'Sortation' },
-  { id: 'dispatch', icon: Ship, label: 'Dispatch', status: 'Shipping', zone: 'Outbound' },
+// Enhanced Warehouse Flow Stages
+const warehouseFlowStages = [
+  {
+    id: 'inbound',
+    icon: Truck,
+    label: 'Inbound Truck',
+    description: 'Arriving at dock',
+    zone: 'Receiving Dock',
+    color: 'from-blue-500 to-blue-600',
+    status: 'Arriving'
+  },
+  {
+    id: 'receiving',
+    icon: ScanLine,
+    label: 'Receiving Area',
+    description: 'Scanning & verification',
+    zone: 'Receiving Bay',
+    color: 'from-cyan-500 to-cyan-600',
+    status: 'Scanning'
+  },
+  {
+    id: 'putaway',
+    icon: Forklift,
+    label: 'Putaway Zone',
+    description: 'Moving to storage',
+    zone: 'Storage Aisle',
+    color: 'from-teal-500 to-teal-600',
+    status: 'Transporting'
+  },
+  {
+    id: 'storage',
+    icon: Boxes,
+    label: 'Storage / Inventory',
+    description: 'Inventory management',
+    zone: 'Rack Storage',
+    color: 'from-emerald-500 to-emerald-600',
+    status: 'Storing'
+  },
+  {
+    id: 'replenish',
+    icon: ArrowRightLeft,
+    label: 'Replenishment',
+    description: 'Stock transfer',
+    zone: 'Pick Zone',
+    color: 'from-green-500 to-green-600',
+    status: 'Replenishing'
+  },
+  {
+    id: 'picking',
+    icon: ShoppingCart,
+    label: 'Picking Zone',
+    description: 'Order fulfillment',
+    zone: 'Pick Area',
+    color: 'from-lime-500 to-lime-600',
+    status: 'Picking'
+  },
+  {
+    id: 'packing',
+    icon: Package,
+    label: 'Packing Station',
+    description: 'Pack & verify',
+    zone: 'Pack Station',
+    color: 'from-yellow-500 to-yellow-600',
+    status: 'Packing'
+  },
+  {
+    id: 'conveyor',
+    icon: Building2,
+    label: 'Conveyor Belt',
+    description: 'Sortation line',
+    zone: 'Sortation',
+    color: 'from-orange-500 to-orange-600',
+    status: 'Sorting'
+  },
+  {
+    id: 'dispatch',
+    icon: Ship,
+    label: 'Dispatch / Ship',
+    description: 'Outbound loading',
+    zone: 'Shipping Dock',
+    color: 'from-red-500 to-red-600',
+    status: 'Shipping'
+  },
+];
+
+// Status Badges
+const statusBadges = [
+  { label: 'Inventory Synced', icon: Check, color: 'bg-green-500', active: true },
+  { label: 'Orders Processing', icon: Loader2, color: 'bg-blue-500', active: true },
+  { label: 'Picking Active', icon: ShoppingCart, color: 'bg-cyan-500', active: true },
+  { label: 'Shipment Ready', icon: Truck, color: 'bg-orange-500', active: true },
 ];
 
 const services = [
@@ -99,310 +179,521 @@ const team = [
   },
 ];
 
-// Animated Box Component
-function AnimatedBox({ delay = 0, path }: { delay?: number; path: 'top' | 'bottom' }) {
-  const positions = path === 'top'
-    ? [
-        { x: 0, y: 0, opacity: 0 },
-        { x: 60, y: 0, opacity: 1 },
-        { x: 120, y: 0, opacity: 1 },
-        { x: 180, y: 0, opacity: 1 },
-        { x: 240, y: 0, opacity: 0 },
-      ]
-    : [
-        { x: 0, y: 0, opacity: 0 },
-        { x: 0, y: 40, opacity: 1 },
-        { x: 60, y: 40, opacity: 1 },
-        { x: 120, y: 40, opacity: 1 },
-        { x: 180, y: 40, opacity: 1 },
-        { x: 240, y: 40, opacity: 0 },
-      ];
-
+// Animated Package Component moving through stages
+function MovingPackage({ startX, startY, endX, endY, delay = 0 }: { startX: number; startY: number; endX: number; endY: number; delay?: number }) {
   return (
     <motion.div
-      className="absolute w-6 h-5 bg-gradient-to-br from-primary-400 to-cyan-500 rounded shadow-lg flex items-center justify-center"
-      initial={positions[0]}
-      animate={positions}
+      className="absolute w-8 h-6 z-20"
+      initial={{ x: startX, y: startY, opacity: 0 }}
+      animate={{
+        x: [startX, startX + (endX - startX) * 0.3, startX + (endX - startX) * 0.7, endX],
+        y: [startY, startY + (endY - startY) * 0.3, startY + (endY - startY) * 0.7, endY],
+        opacity: [0, 1, 1, 0],
+        scale: [0.8, 1, 1, 0.8]
+      }}
       transition={{
-        duration: 8,
+        duration: 6,
         delay,
         repeat: Infinity,
-        ease: 'linear',
+        ease: 'easeInOut'
       }}
     >
-      <Box className="w-3 h-3 text-white" />
+      <div className="w-full h-full bg-gradient-to-br from-primary-400 to-cyan-500 rounded-md shadow-lg flex items-center justify-center border border-white/30">
+        <Box className="w-4 h-4 text-white" />
+      </div>
     </motion.div>
   );
 }
 
-// Warehouse Flow Stage Component
-function WarehouseStage({ stage, index, isActive }: { stage: typeof warehouseStages[0]; index: number; isActive: boolean }) {
+// Animated Truck Component
+function AnimatedTruck({ isOutbound = false }: { isOutbound?: boolean }) {
+  return (
+    <motion.div
+      className="absolute"
+      initial={{ x: isOutbound ? 0 : -100, opacity: 0 }}
+      animate={{
+        x: isOutbound ? [0, 150, 300] : [-100, 0],
+        opacity: isOutbound ? [1, 1, 0] : [0, 1]
+      }}
+      transition={{
+        duration: isOutbound ? 4 : 3,
+        repeat: Infinity,
+        repeatDelay: 2,
+        ease: 'easeInOut'
+      }}
+    >
+      <div className={`w-16 h-10 ${isOutbound ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-blue-500 to-blue-600'} rounded-lg shadow-xl flex items-center justify-center`}>
+        <Truck className="w-6 h-6 text-white" />
+      </div>
+    </motion.div>
+  );
+}
+
+// Animated Forklift Component
+function AnimatedForklift() {
+  return (
+    <motion.div
+      className="absolute bottom-16"
+      animate={{
+        x: [0, 100, 200, 100, 0],
+        y: [0, -5, 0, -5, 0]
+      }}
+      transition={{
+        duration: 8,
+        repeat: Infinity,
+        ease: 'easeInOut'
+      }}
+    >
+      <div className="w-12 h-8 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg shadow-xl flex items-center justify-center">
+        <Forklift className="w-5 h-5 text-white" />
+      </div>
+    </motion.div>
+  );
+}
+
+// Conveyor Belt Component
+function ConveyorBelt() {
+  return (
+    <div className="relative h-10 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-lg overflow-hidden shadow-inner">
+      {/* Belt Lines */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 40px)'
+        }}
+        animate={{ backgroundPosition: ['0px 0', '80px 0'] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+      />
+      {/* Moving Packages */}
+      {[0, 1, 2, 3, 4].map((i) => (
+        <motion.div
+          key={i}
+          className="absolute top-1 w-8 h-6 bg-gradient-to-br from-primary-400 to-cyan-500 rounded shadow-lg flex items-center justify-center"
+          animate={{ x: [-40, 320] }}
+          transition={{
+            duration: 5,
+            delay: i * 1,
+            repeat: Infinity,
+            ease: 'linear'
+          }}
+        >
+          <Box className="w-4 h-4 text-white" />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// Warehouse Stage Card Component
+function WarehouseStageCard({ stage, index, isActive, isHovered, onHover }: {
+  stage: typeof warehouseFlowStages[0];
+  index: number;
+  isActive: boolean;
+  isHovered: boolean;
+  onHover: (hover: boolean) => void;
+}) {
   const Icon = stage.icon;
 
   return (
     <motion.div
-      className="relative group"
+      className="relative flex-shrink-0"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.05 }}
+      transition={{ duration: 0.5, delay: index * 0.08 }}
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
     >
-      <motion.div
-        className={`relative glass-dark rounded-xl p-3 sm:p-4 transition-all duration-300 ${
-          isActive ? 'ring-2 ring-primary-400 shadow-glow' : 'hover:shadow-lg hover:-translate-y-1'
-        }`}
-        whileHover={{ scale: 1.02 }}
-      >
-        {/* Status Indicator */}
+      {/* Connecting Line */}
+      {index < warehouseFlowStages.length - 1 && (
         <motion.div
-          className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
-            isActive ? 'bg-green-500' : 'bg-gray-300'
-          }`}
-          animate={isActive ? { scale: [1, 1.2, 1] } : {}}
-          transition={{ duration: 1, repeat: Infinity }}
-        />
-
-        {/* Icon */}
-        <motion.div
-          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mx-auto mb-2 ${
-            isActive ? 'gradient-bg' : 'bg-gradient-to-br from-gray-100 to-gray-200'
-          }`}
-          animate={isActive ? { rotate: [0, 5, -5, 0] } : {}}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? 'text-white' : 'text-gray-600'}`} />
-        </motion.div>
-
-        {/* Label */}
-        <h4 className="text-xs sm:text-sm font-semibold text-gray-800 text-center mb-1">{stage.label}</h4>
-
-        {/* Zone Badge */}
-        <span className="block text-[10px] sm:text-xs text-gray-500 text-center">{stage.zone}</span>
-
-        {/* Status */}
-        {isActive && (
-          <motion.div
-            className="mt-2 px-2 py-0.5 rounded-full bg-primary-50 text-primary-600 text-[10px] font-medium text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {stage.status}...
-          </motion.div>
-        )}
-
-        {/* Hover Glow Effect */}
-        <div className={`absolute inset-0 rounded-xl gradient-bg opacity-0 group-hover:opacity-10 transition-opacity duration-300 -z-10`} />
-      </motion.div>
-
-      {/* Arrow to next */}
-      {index < warehouseStages.length - 1 && (
-        <motion.div
-          className="hidden lg:flex absolute top-1/2 -right-4 -translate-y-1/2 items-center justify-center"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+          className="absolute top-1/2 -right-2 w-4 lg:w-8 h-0.5 -translate-y-1/2 hidden md:block"
+          style={{ background: 'linear-gradient(90deg, rgba(14, 165, 233, 0.3), rgba(14, 165, 233, 0.6))' }}
         >
           <motion.div
-            className="w-4 h-0.5 bg-gradient-to-r from-primary-300 to-cyan-300"
-            animate={{ scaleX: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-          <motion.div
-            className="w-0 h-0 border-t-4 border-b-4 border-l-6 border-t-transparent border-b-transparent border-l-primary-400 ml-[-2px]"
-            animate={{ x: [0, 2, 0] }}
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full gradient-bg"
+            animate={{ x: [-4, 0, -4], scale: [0.8, 1, 0.8] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
         </motion.div>
       )}
+
+      <motion.div
+        className={`relative glass-dark rounded-xl p-3 sm:p-4 min-w-[100px] sm:min-w-[120px] lg:min-w-[140px] transition-all duration-300 ${
+          isActive ? 'ring-2 ring-primary-400' : ''
+        } ${isHovered ? 'shadow-glow-lg -translate-y-1' : 'shadow-lg'}`}
+        animate={isActive ? { scale: [1, 1.02, 1] } : {}}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        {/* Active Glowing Border */}
+        {isActive && (
+          <motion.div
+            className="absolute inset-0 rounded-xl gradient-bg opacity-20"
+            animate={{ opacity: [0.1, 0.25, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        )}
+
+        {/* Status Indicator */}
+        <motion.div
+          className={`absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full border-2 border-white shadow-lg ${
+            isActive ? 'bg-green-500' : 'bg-gray-400'
+          }`}
+          animate={isActive ? { scale: [1, 1.3, 1] } : {}}
+          transition={{ duration: 1, repeat: Infinity }}
+        >
+          {isActive && (
+            <motion.div
+              className="absolute inset-0 rounded-full bg-green-500"
+              animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+          )}
+        </motion.div>
+
+        {/* Icon Container */}
+        <motion.div
+          className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg ${
+            isActive
+              ? `bg-gradient-to-br ${stage.color}`
+              : 'bg-gradient-to-br from-gray-100 to-gray-200'
+          }`}
+          animate={isActive ? { rotate: [0, 5, -5, 0] } : {}}
+          transition={{ duration: 3, repeat: Infinity }}
+        >
+          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isActive ? 'text-white' : 'text-gray-500'}`} />
+        </motion.div>
+
+        {/* Label */}
+        <h4 className="text-xs sm:text-sm font-bold text-gray-800 text-center mb-1">{stage.label}</h4>
+
+        {/* Description */}
+        <p className="text-[10px] sm:text-xs text-gray-500 text-center mb-2">{stage.description}</p>
+
+        {/* Zone Badge */}
+        <div className={`flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
+          isActive ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-600'
+        }`}>
+          <Radio className="w-2.5 h-2.5" />
+          <span>{stage.zone}</span>
+        </div>
+
+        {/* Active Status */}
+        {isActive && (
+          <motion.div
+            className="mt-2 flex items-center justify-center gap-1"
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <motion.div
+              className="w-1.5 h-1.5 rounded-full bg-green-500"
+              animate={{ scale: [1, 1.5, 1] }}
+              transition={{ duration: 0.5, repeat: Infinity }}
+            />
+            <span className="text-[10px] font-semibold text-green-600">{stage.status}...</span>
+          </motion.div>
+        )}
+
+        {/* Hover Glow */}
+        <motion.div
+          className={`absolute inset-0 rounded-xl bg-gradient-to-br ${stage.color} -z-10`}
+          animate={{ opacity: isHovered ? 0.15 : 0 }}
+          transition={{ duration: 0.3 }}
+        />
+      </motion.div>
     </motion.div>
   );
 }
 
-// Live Warehouse Operations Flow Component
+// Live Warehouse Operations Flow Section
 function WarehouseFlowSection() {
   const [activeStage, setActiveStage] = useState(0);
+  const [hoveredStage, setHoveredStage] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
+  // Cycle through stages
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveStage((prev) => (prev + 1) % warehouseStages.length);
-    }, 2000);
+      setActiveStage((prev) => (prev + 1) % warehouseFlowStages.length);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <section id="warehouse-flow" className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-primary-50/20 to-cyan-50/20" />
-      <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary-100/30 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-cyan-100/30 rounded-full blur-3xl" />
+  // Mouse parallax
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 20;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 10;
+    mouseX.set(x);
+    mouseY.set(y);
+  }, [mouseX, mouseY]);
 
-      <div className="relative max-w-7xl mx-auto">
+  return (
+    <section
+      id="warehouse-flow"
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+    >
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-cyan-50/30" />
+
+      {/* Animated Grid Pattern */}
+      <motion.div
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px'
+        }}
+        animate={{ backgroundPosition: ['0px 0px', '40px 40px'] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+      />
+
+      {/* Glowing Orbs */}
+      <motion.div
+        className="absolute top-20 left-10 w-72 h-72 bg-primary-200/40 rounded-full blur-3xl"
+        animate={{ x: mouseX, y: mouseY }}
+      />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-200/30 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-primary-100/20 via-cyan-100/20 to-primary-100/20 rounded-full blur-3xl" />
+
+      <div className="relative max-w-[1600px] mx-auto">
         {/* Header */}
         <motion.div
-          className="text-center mb-12"
+          className="text-center mb-12 sm:mb-16"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass mb-4">
+          <motion.div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-4"
+            animate={{ boxShadow: ['0 0 20px rgba(14, 165, 233, 0.1)', '0 0 30px rgba(14, 165, 233, 0.2)', '0 0 20px rgba(14, 165, 233, 0.1)'] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
             <motion.div
-              className="w-2 h-2 rounded-full bg-green-500"
-              animate={{ scale: [1, 1.3, 1] }}
+              className="w-2.5 h-2.5 rounded-full bg-green-500"
+              animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
             />
-            <span className="text-sm font-medium text-gray-700">Live Operations View</span>
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            End-to-End{' '}
-            <span className="gradient-text">Warehouse Flow</span>
+            <span className="text-sm font-semibold text-gray-700">Real-time Operations</span>
+          </motion.div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
+            Live Warehouse{' '}
+            <span className="gradient-text">Operations Flow</span>
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-base sm:text-lg">
-            Visualize how IBM Sterling WMS orchestrates every step from inbound receiving to outbound shipping
+          <p className="text-gray-600 max-w-3xl mx-auto text-base sm:text-lg leading-relaxed">
+            Real-time visualization of IBM Sterling WMS & OMS orchestrating receiving,
+            inventory movement, replenishment, picking, packing, and shipping.
           </p>
+        </motion.div>
+
+        {/* Status Badges */}
+        <motion.div
+          className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          {statusBadges.map((badge, index) => {
+            const Icon = badge.icon;
+            return (
+              <motion.div
+                key={badge.label}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full glass-dark shadow-lg`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+              >
+                <motion.div
+                  className={`w-2 h-2 rounded-full ${badge.color}`}
+                  animate={badge.active ? { scale: [1, 1.3, 1] } : {}}
+                  transition={{ duration: 1, repeat: Infinity }}
+                />
+                <Icon className={`w-4 h-4 ${badge.active ? 'text-primary-500 animate-pulse' : 'text-gray-400'}`} />
+                <span className="text-xs sm:text-sm font-medium text-gray-700">{badge.label}</span>
+              </motion.div>
+            );
+          })}
         </motion.div>
 
         {/* Main Flow Container */}
         <motion.div
-          className="glass-dark rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden"
+          className="glass-dark rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl relative overflow-hidden"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          {/* Animated Background Boxes - Desktop Only */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none hidden xl:block">
-            {[0, 2, 4].map((delay) => (
-              <AnimatedBox key={`top-${delay}`} delay={delay} path="top" />
-            ))}
-            {[1, 3, 5].map((delay) => (
-              <AnimatedBox key={`bottom-${delay}`} delay={delay} path="bottom" />
-            ))}
+          {/* Animated Background Packages */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <MovingPackage startX={50} startY={80} endX={800} endY={80} delay={0} />
+            <MovingPackage startX={150} startY={80} endX={900} endY={80} delay={2} />
+            <MovingPackage startX={250} startY={80} endX={1000} endY={80} delay={4} />
           </div>
 
-          {/* Progress Bar */}
-          <div className="mb-6 relative">
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          {/* Progress Track */}
+          <div className="relative mb-6 sm:mb-8">
+            <div className="h-2 sm:h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
               <motion.div
-                className="h-full gradient-bg rounded-full"
-                initial={{ width: '0%' }}
-                animate={{ width: `${((activeStage + 1) / warehouseStages.length) * 100}%` }}
+                className="h-full gradient-bg rounded-full relative"
+                animate={{ width: `${((activeStage + 1) / warehouseFlowStages.length) * 100}%` }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
-              />
+              >
+                {/* Glowing Dot */}
+                <motion.div
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-lg"
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                />
+              </motion.div>
             </div>
-            <div className="absolute top-4 left-0 right-0 flex justify-between px-1">
-              {warehouseStages.map((stage, i) => (
+            {/* Stage Indicators */}
+            <div className="absolute top-4 sm:top-5 left-0 right-0 flex justify-between px-1">
+              {warehouseFlowStages.map((stage, i) => (
                 <motion.div
                   key={stage.id}
-                  className={`w-2 h-2 rounded-full ${i <= activeStage ? 'gradient-bg' : 'bg-gray-200'}`}
+                  className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 ${
+                    i <= activeStage ? 'border-primary-400 bg-primary-500' : 'border-gray-300 bg-white'
+                  }`}
+                  animate={i === activeStage ? { scale: [1, 1.4, 1] } : {}}
+                  transition={{ duration: 0.5, repeat: Infinity }}
                 />
               ))}
             </div>
           </div>
 
-          {/* Warehouse Stages Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-4 mb-8">
-            {warehouseStages.map((stage, index) => (
-              <WarehouseStage
-                key={stage.id}
-                stage={stage}
-                index={index}
-                isActive={index === activeStage}
-              />
-            ))}
+          {/* Warehouse Stages - Horizontal Scrollable */}
+          <div className="relative overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-primary-300 scrollbar-track-gray-100">
+            <div className="flex gap-3 sm:gap-4 lg:gap-6 min-w-max px-2">
+              {warehouseFlowStages.map((stage, index) => (
+                <WarehouseStageCard
+                  key={stage.id}
+                  stage={stage}
+                  index={index}
+                  isActive={index === activeStage}
+                  isHovered={hoveredStage === index}
+                  onHover={(hover) => setHoveredStage(hover ? index : null)}
+                />
+              ))}
+            </div>
           </div>
 
-          {/* Conveyor Belt Animation */}
-          <div className="relative h-12 bg-gray-50 rounded-xl overflow-hidden">
-            <div className="absolute inset-0 flex items-center">
-              {[...Array(20)].map((_, i) => (
+          {/* Conveyor Belt Section */}
+          <motion.div
+            className="mt-6 sm:mt-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <motion.div
+                className="w-2 h-2 rounded-full bg-green-500"
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+              <span className="text-xs font-semibold text-gray-600">Conveyor Belt - Active Sortation</span>
+            </div>
+            <ConveyorBelt />
+          </motion.div>
+
+          {/* Warehouse Floor Visualization */}
+          <motion.div
+            className="mt-6 sm:mt-8 relative h-24 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 rounded-xl overflow-hidden shadow-inner"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            {/* Floor Grid */}
+            <div
+              className="absolute inset-0 opacity-30"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)
+                `,
+                backgroundSize: '20px 20px'
+              }}
+            />
+
+            {/* Forklift */}
+            <AnimatedForklift />
+
+            {/* Storage Racks */}
+            <div className="absolute top-2 left-10 flex gap-2">
+              {[...Array(4)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="w-8 h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded mx-1 flex items-center justify-center"
-                  animate={{ x: [0, 20] }}
-                  transition={{
-                    duration: 2,
-                    delay: i * 0.2,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
+                  className="w-8 h-14 bg-gradient-to-b from-gray-300 to-gray-400 rounded shadow-lg"
+                  animate={{ y: [0, -2, 0] }}
+                  transition={{ duration: 2, delay: i * 0.2, repeat: Infinity }}
                 >
-                  <Box className="w-4 h-4 text-gray-500" />
+                  {[...Array(3)].map((_, j) => (
+                    <div key={j} className="w-full h-3 border-b border-gray-500/30 flex items-center justify-center">
+                      <Box className="w-3 h-3 text-primary-400" />
+                    </div>
+                  ))}
                 </motion.div>
               ))}
             </div>
-            {/* Conveyor stripes */}
-            <div className="absolute inset-0 opacity-30">
-              <motion.div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage:
-                    'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)',
-                }}
-                animate={{ backgroundPosition: ['0px 0', '40px 0', '0px 0'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              />
-            </div>
-          </div>
 
-          {/* Status Legend */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            {[
-              { status: 'In Progress', color: 'bg-green-500', animate: true },
-              { status: 'Waiting', color: 'bg-gray-300', animate: false },
-              { status: 'Completed', color: 'bg-primary-500', animate: false },
-            ].map((item) => (
-              <div key={item.status} className="flex items-center gap-2">
-                <motion.div
-                  className={`w-3 h-3 rounded-full ${item.color}`}
-                  animate={item.animate ? { scale: [1, 1.2, 1] } : {}}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-                <span className="text-xs sm:text-sm text-gray-600">{item.status}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Forklift Animation */}
-          <motion.div
-            className="absolute bottom-20 left-0 hidden md:block"
-            animate={{ x: [0, 200, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <div className="w-10 h-8 bg-gradient-to-r from-amber-400 to-amber-500 rounded-lg flex items-center justify-center shadow-md">
-              <Forklift className="w-5 h-5 text-white" />
+            {/* Outbound Truck */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+              <AnimatedTruck isOutbound />
             </div>
           </motion.div>
+
+          {/* Bottom Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6">
+            {[
+              { label: 'Avg Processing', value: '2.5 hrs', change: '-15%', positive: true },
+              { label: 'Units Today', value: '12,450', change: '+8%', positive: true },
+              { label: 'Trucks Processed', value: '42', change: '87% Util', positive: true },
+              { label: 'Order Accuracy', value: '99.8%', change: 'Target: 99.5%', positive: true },
+            ].map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                className="glass rounded-xl p-3 sm:p-4 hover:shadow-glow transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -2 }}
+              >
+                <p className="text-[10px] sm:text-xs text-gray-500 mb-1">{stat.label}</p>
+                <p className="text-lg sm:text-xl font-bold text-gray-800">{stat.value}</p>
+                <p className={`text-[10px] sm:text-xs ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
+                  {stat.change}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
-        {/* Bottom Info Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-          {[
-            { icon: Clock, label: 'Avg Processing Time', value: '2.5 hrs', trend: '-15% from last week' },
-            { icon: Package, label: 'Units Processed Today', value: '12,450', trend: '+8% from yesterday' },
-            { icon: Truck, label: 'Trucks Processed', value: '42', trend: 'Dock utilization: 87%' },
-            { icon: TrendingUp, label: 'Order Accuracy', value: '99.8%', trend: 'Target: 99.5%' },
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              className="glass-dark rounded-xl p-4 hover:shadow-glow transition-all duration-300"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -2 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center">
-                  <stat.icon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">{stat.label}</p>
-                  <p className="text-lg font-bold text-gray-800">{stat.value}</p>
-                </div>
-              </div>
-              <p className="text-xs text-green-600 mt-2">{stat.trend}</p>
-            </motion.div>
-          ))}
-        </div>
+        {/* Floating Warehouse Indicators */}
+        <motion.div
+          className="absolute -top-4 left-1/4 glass px-3 py-1.5 rounded-full shadow-lg hidden lg:flex items-center gap-2"
+          animate={{ y: [-5, 5, -5] }}
+          transition={{ duration: 3, repeat: Infinity }}
+        >
+          <Activity className="w-4 h-4 text-primary-500" />
+          <span className="text-xs font-medium text-gray-700">System Online</span>
+        </motion.div>
+
+        <motion.div
+          className="absolute -bottom-4 right-1/4 glass px-3 py-1.5 rounded-full shadow-lg hidden lg:flex items-center gap-2"
+          animate={{ y: [5, -5, 5] }}
+          transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+        >
+          <AlertCircle className="w-4 h-4 text-green-500" />
+          <span className="text-xs font-medium text-gray-700">All Systems Normal</span>
+        </motion.div>
       </div>
     </section>
   );
