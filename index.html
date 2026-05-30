@@ -36,14 +36,12 @@
         frame-ancestors 'none';
       " />
 
-    <!-- Clickjacking protection -->
+    <!-- Clickjacking protection and Security headers -->
+<!--
     <meta http-equiv="X-Frame-Options" content="DENY" />
-
-    <!-- Prevents MIME-type sniffing -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-
-    <!-- Controls how much referrer info is sent -->
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+-->
 
     <!-- Permissions Policy – disable sensors/APIs that this site doesn't need -->
     <meta http-equiv="Permissions-Policy"
@@ -65,6 +63,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>
