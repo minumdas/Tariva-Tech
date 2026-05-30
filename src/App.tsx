@@ -5,105 +5,16 @@ import {
   Users, Mail, MapPin, Phone, Linkedin, Twitter, Github,
   ChevronDown, Zap, Shield, Cpu, Code, TestTube2, Server,
   Package, Truck, Clock, TrendingUp, Award, ArrowRight,
-  Play, ExternalLink, Box, Warehouse, Forklift, Boxes,
-  ArrowRightLeft, ShoppingCart, Ship, Building2, ScanLine,
-  Activity, Radio, Loader2, Check, AlertCircle
+  Play, Box, Warehouse, Forklift,
+  ShoppingCart, ScanLine,
+  Radio, Check
 } from 'lucide-react';
 
 const navItems = ['Services', 'Warehouse Flow', 'IBM Sterling', 'Expertise', 'Team', 'Contact'];
 
-// Enhanced Warehouse Flow Stages
-const warehouseFlowStages = [
-  {
-    id: 'inbound',
-    icon: Truck,
-    label: 'Inbound Truck',
-    description: 'Arriving at dock',
-    zone: 'Receiving Dock',
-    color: 'from-blue-500 to-blue-600',
-    status: 'Arriving'
-  },
-  {
-    id: 'receiving',
-    icon: ScanLine,
-    label: 'Receiving Area',
-    description: 'Scanning & verification',
-    zone: 'Receiving Bay',
-    color: 'from-cyan-500 to-cyan-600',
-    status: 'Scanning'
-  },
-  {
-    id: 'putaway',
-    icon: Forklift,
-    label: 'Putaway Zone',
-    description: 'Moving to storage',
-    zone: 'Storage Aisle',
-    color: 'from-teal-500 to-teal-600',
-    status: 'Transporting'
-  },
-  {
-    id: 'storage',
-    icon: Boxes,
-    label: 'Storage / Inventory',
-    description: 'Inventory management',
-    zone: 'Rack Storage',
-    color: 'from-emerald-500 to-emerald-600',
-    status: 'Storing'
-  },
-  {
-    id: 'replenish',
-    icon: ArrowRightLeft,
-    label: 'Replenishment',
-    description: 'Stock transfer',
-    zone: 'Pick Zone',
-    color: 'from-green-500 to-green-600',
-    status: 'Replenishing'
-  },
-  {
-    id: 'picking',
-    icon: ShoppingCart,
-    label: 'Picking Zone',
-    description: 'Order fulfillment',
-    zone: 'Pick Area',
-    color: 'from-lime-500 to-lime-600',
-    status: 'Picking'
-  },
-  {
-    id: 'packing',
-    icon: Package,
-    label: 'Packing Station',
-    description: 'Pack & verify',
-    zone: 'Pack Station',
-    color: 'from-yellow-500 to-yellow-600',
-    status: 'Packing'
-  },
-  {
-    id: 'conveyor',
-    icon: Building2,
-    label: 'Conveyor Belt',
-    description: 'Sortation line',
-    zone: 'Sortation',
-    color: 'from-orange-500 to-orange-600',
-    status: 'Sorting'
-  },
-  {
-    id: 'dispatch',
-    icon: Ship,
-    label: 'Dispatch / Ship',
-    description: 'Outbound loading',
-    zone: 'Shipping Dock',
-    color: 'from-red-500 to-red-600',
-    status: 'Shipping'
-  },
-];
+const sectionId = (label: string) => label.toLowerCase().trim().replace(/\s+/g, '-');
 
-// Status Badges
-const statusBadges = [
-  { label: 'Inventory Synced', icon: Check, color: 'bg-green-500', active: true },
-  { label: 'Orders Processing', icon: Loader2, color: 'bg-blue-500', active: true },
-  { label: 'Picking Active', icon: ShoppingCart, color: 'bg-cyan-500', active: true },
-  { label: 'Shipment Ready', icon: Truck, color: 'bg-orange-500', active: true },
-];
+
 
 const services = [
   {
@@ -306,19 +217,20 @@ function WarehouseFlowSection() {
         className="absolute inset-0 opacity-20"
         style={{
           backgroundImage: `
-            radial-gradient(circle at 2px 2px, rgba(14, 165, 233, 0.15) 1px, transparent 0),
+            radial-gradient(circle at 2px 2px, rgba(14, 165, 233, 0.1) 0%, transparent 0),
             linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
             linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px)
           `,
-          backgroundSize: '30px 30px, 60px 60px, 60px 60px'
+          backgroundSize: '30px 30px, 60px 60px, 60px 60px',
+          x: parallaxX,
+          y: parallaxY
         }}
-        animate={{ x: parallaxX, y: parallaxY }}
       />
 
       {/* Glowing Orbs */}
       <motion.div
         className="absolute top-10 left-1/4 w-64 h-64 bg-primary-200/30 rounded-full blur-3xl pointer-events-none"
-        animate={{ x: parallaxX, y: parallaxY }}
+        style={{ x: parallaxX, y: parallaxY }}
       />
       <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-cyan-200/20 rounded-full blur-3xl" />
 
@@ -519,7 +431,7 @@ function WarehouseFlowSection() {
                   </motion.div>
                   {/* Mini rack */}
                   <div className="flex gap-0.5">
-                    {[1, 2, 3].map((filled, i) => (
+                    {[1, 2, 3].map((_, i) => (
                       <motion.div
                         key={i}
                         className={`w-3 h-4 rounded flex items-center justify-center ${
@@ -1022,6 +934,18 @@ function App() {
   const [scrolled, setScrolled] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
+  const handleMobileNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    setTimeout(() => {
+      const targetId = href.replace('#', '');
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 350);
+  };
+
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const springConfig = { damping: 25, stiffness: 150 };
@@ -1078,7 +1002,7 @@ function App() {
               {navItems.map((item) => (
                 <a
                   key={item}
-                  href={`#${item.toLowerCase().replace(' ', '-')}`}
+                  href={`#${sectionId(item)}`}
                   className="text-gray-600 hover:text-primary-600 font-medium transition-colors relative group"
                 >
                   {item}
@@ -1099,6 +1023,7 @@ function App() {
 
             {/* Mobile Menu Button */}
             <button
+              type="button"
               className="md:hidden p-2 text-gray-600"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -1111,7 +1036,7 @@ function App() {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
-              className="md:hidden glass-dark border-t border-white/20"
+              className="md:hidden glass-dark border-t border-white/20 overflow-hidden"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -1120,9 +1045,9 @@ function App() {
                 {navItems.map((item) => (
                   <a
                     key={item}
-                    href={`#${item.toLowerCase().replace(' ', '-')}`}
+                    href={`#${sectionId(item)}`}
                     className="block text-gray-700 font-medium py-2"
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={(e) => handleMobileNavClick(e, `#${sectionId(item)}`)}
                   >
                     {item}
                   </a>
@@ -1130,7 +1055,7 @@ function App() {
                 <a
                   href="#contact"
                   className="block w-full text-center px-6 py-3 gradient-bg text-white font-medium rounded-full"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(e) => handleMobileNavClick(e, '#contact')}
                 >
                   Get Started
                 </a>
@@ -1333,7 +1258,7 @@ function App() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              {ibmSterlingFeatures.map((stat, index) => (
+              {ibmSterlingFeatures.map((stat) => (
                 <motion.div
                   key={stat.label}
                   className="glass-dark rounded-2xl p-6 text-center shadow-lg hover:shadow-glow transition-shadow duration-300"
