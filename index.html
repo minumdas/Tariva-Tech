@@ -4,14 +4,68 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tariva Technologies Enterprise Website</title>
-    <meta property="og:image" content="https://bolt.new/static/og_default.png" />
+    <title>TarivaTech | Enterprise IT Solutions – WMS, OMS & QA Services</title>
+    <meta name="description" content="TarivaTech delivers world-class QA Testing, Web Development, Application Support and IBM Sterling WMS & OMS implementation services for enterprise businesses." />
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECURITY HEADERS (meta-equivalent for static hosting)
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Content-Security-Policy
+         – default-src 'self'      : blocks all external resources by default
+         – script-src 'self' 'unsafe-inline' : Vite injects inline init scripts; tighten
+           this to a nonce-based policy once a backend is added
+         – style-src 'self' 'unsafe-inline'  : Tailwind/Framer-Motion use inline styles
+         – img-src 'self' data: https:        : allow images from same origin + Pexels CDN
+         – font-src 'self' data:              : allow self-hosted fonts (@fontsource)
+         – connect-src 'self'                 : blocks unauthorized XHR/fetch targets
+         – object-src 'none'                  : disables Flash/plugins entirely
+         – base-uri 'self'                    : prevents base-tag hijacking
+         – frame-ancestors 'none'             : clickjacking protection (same as X-Frame-Options DENY)
+    -->
+    <meta http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https:;
+        font-src 'self' data:;
+        connect-src 'self';
+        object-src 'none';
+        base-uri 'self';
+        frame-ancestors 'none';
+      " />
+
+    <!-- Clickjacking protection -->
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+
+    <!-- Prevents MIME-type sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+
+    <!-- Controls how much referrer info is sent -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- Permissions Policy – disable sensors/APIs that this site doesn't need -->
+    <meta http-equiv="Permissions-Policy"
+      content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()" />
+
+    <!-- Force HTTPS on browsers that support it -->
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains" />
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         END SECURITY HEADERS
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Open Graph / Social sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TarivaTech | Enterprise IT Solutions" />
+    <meta property="og:description" content="IBM Sterling WMS & OMS specialists. QA Testing, Web Development & Application Support." />
+    <meta property="og:url" content="https://minumdas.github.io/Tariva-Tech/" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://bolt.new/static/og_default.png" />
-    <script type="module" crossorigin src="/Tariva-Tech/assets/index-4gSJVXSP.js"></script>
-    <link rel="stylesheet" crossorigin href="/Tariva-Tech/assets/index-bZqXJsu9.css">
+    <script type="module" crossorigin src="/Tariva-Tech/assets/index-cDk2RtFQ.js"></script>
+    <link rel="stylesheet" crossorigin href="/Tariva-Tech/assets/index-DYtnSmJ0.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>
