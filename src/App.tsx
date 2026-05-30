@@ -934,6 +934,62 @@ function App() {
   const [scrolled, setScrolled] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
+  // ── Secure contact form state ────────────────────────────────────────────
+  const [formData, setFormData] = useState({ name: '', email: '', service: '', message: '', honeypot: '' });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const lastSubmitRef = useRef<number>(0);
+
+  /** Strip HTML tags / script content from any string (XSS input sanitization) */
+  const sanitize = (value: string) =>
+    value.replace(/<[^>]*>/g, '').replace(/[<>"'`]/g, '');
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    if (!formData.name.trim() || formData.name.trim().length < 2)
+      errors.name = 'Full name must be at least 2 characters.';
+    if (formData.name.length > 100)
+      errors.name = 'Full name must not exceed 100 characters.';
+    if (!emailRegex.test(formData.email))
+      errors.email = 'Please enter a valid email address.';
+    if (!formData.service || formData.service === '')
+      errors.service = 'Please select a service.';
+    if (!formData.message.trim() || formData.message.trim().length < 10)
+      errors.message = 'Message must be at least 10 characters.';
+    if (formData.message.length > 2000)
+      errors.message = 'Message must not exceed 2000 characters.';
+    return errors;
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: sanitize(value) }));
+    if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Honeypot: if filled, silently reject (bot detected)
+    if (formData.honeypot) return;
+    // Rate limit: 1 submission per 30 seconds
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 30_000) {
+      setFormStatus('error');
+      return;
+    }
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
+    setFormStatus('submitting');
+    lastSubmitRef.current = now;
+    // Simulate submission (replace with secure backend endpoint — never expose API keys here)
+    setTimeout(() => {
+      setFormStatus('success');
+      setFormData({ name: '', email: '', service: '', message: '', honeypot: '' });
+    }, 1200);
+  };
+  // ────────────────────────────────────────────────────────────────────────
+
   const handleMobileNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     setMobileMenuOpen(false);
@@ -1458,49 +1514,130 @@ function App() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <form className="glass-dark rounded-2xl p-8 shadow-lg">
+              <form
+                className="glass-dark rounded-2xl p-8 shadow-lg"
+                onSubmit={handleFormSubmit}
+                noValidate
+                aria-label="Contact form"
+              >
+                {/* Honeypot field – hidden from real users, traps bots */}
+                <div aria-hidden="true" style={{ display: 'none' }}>
+                  <input
+                    type="text"
+                    name="honeypot"
+                    value={formData.honeypot}
+                    onChange={handleFormChange}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-gray-700 font-medium mb-2">Full Name</label>
+                    <label htmlFor="contact-name" className="block text-gray-700 font-medium mb-2">Full Name</label>
                     <input
+                      id="contact-name"
                       type="text"
-                      className="w-full px-4 py-3 rounded-xl bg-white/50 border border-gray-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleFormChange}
+                      maxLength={100}
+                      autoComplete="name"
+                      aria-required="true"
+                      aria-describedby={formErrors.name ? 'name-error' : undefined}
+                      className={`w-full px-4 py-3 rounded-xl bg-white/50 border ${
+                        formErrors.name ? 'border-red-400' : 'border-gray-200'
+                      } focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all`}
                       placeholder="John Doe"
                     />
+                    {formErrors.name && <p id="name-error" className="text-red-500 text-xs mt-1" role="alert">{formErrors.name}</p>}
                   </div>
+
                   <div>
-                    <label className="block text-gray-700 font-medium mb-2">Email</label>
+                    <label htmlFor="contact-email" className="block text-gray-700 font-medium mb-2">Email</label>
                     <input
+                      id="contact-email"
                       type="email"
-                      className="w-full px-4 py-3 rounded-xl bg-white/50 border border-gray-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleFormChange}
+                      maxLength={254}
+                      autoComplete="email"
+                      aria-required="true"
+                      aria-describedby={formErrors.email ? 'email-error' : undefined}
+                      className={`w-full px-4 py-3 rounded-xl bg-white/50 border ${
+                        formErrors.email ? 'border-red-400' : 'border-gray-200'
+                      } focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all`}
                       placeholder="john@company.com"
                     />
+                    {formErrors.email && <p id="email-error" className="text-red-500 text-xs mt-1" role="alert">{formErrors.email}</p>}
                   </div>
+
                   <div>
-                    <label className="block text-gray-700 font-medium mb-2">Service Interest</label>
-                    <select className="w-full px-4 py-3 rounded-xl bg-white/50 border border-gray-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all">
-                      <option>Select a service</option>
-                      <option>QA Testing</option>
-                      <option>Web Development</option>
-                      <option>Application Support</option>
-                      <option>IBM Sterling WMS/OMS</option>
+                    <label htmlFor="contact-service" className="block text-gray-700 font-medium mb-2">Service Interest</label>
+                    <select
+                      id="contact-service"
+                      name="service"
+                      value={formData.service}
+                      onChange={handleFormChange}
+                      aria-required="true"
+                      aria-describedby={formErrors.service ? 'service-error' : undefined}
+                      className={`w-full px-4 py-3 rounded-xl bg-white/50 border ${
+                        formErrors.service ? 'border-red-400' : 'border-gray-200'
+                      } focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all`}
+                    >
+                      <option value="">Select a service</option>
+                      <option value="qa">QA Testing</option>
+                      <option value="web">Web Development</option>
+                      <option value="support">Application Support</option>
+                      <option value="ibm">IBM Sterling WMS/OMS</option>
                     </select>
+                    {formErrors.service && <p id="service-error" className="text-red-500 text-xs mt-1" role="alert">{formErrors.service}</p>}
                   </div>
+
                   <div>
-                    <label className="block text-gray-700 font-medium mb-2">Message</label>
+                    <label htmlFor="contact-message" className="block text-gray-700 font-medium mb-2">Message</label>
                     <textarea
+                      id="contact-message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleFormChange}
                       rows={4}
-                      className="w-full px-4 py-3 rounded-xl bg-white/50 border border-gray-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all resize-none"
+                      maxLength={2000}
+                      aria-required="true"
+                      aria-describedby={formErrors.message ? 'message-error' : undefined}
+                      className={`w-full px-4 py-3 rounded-xl bg-white/50 border ${
+                        formErrors.message ? 'border-red-400' : 'border-gray-200'
+                      } focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all resize-none`}
                       placeholder="Tell us about your project..."
                     />
+                    <div className="flex justify-between">
+                      {formErrors.message
+                        ? <p id="message-error" className="text-red-500 text-xs mt-1" role="alert">{formErrors.message}</p>
+                        : <span />}
+                      <span className="text-xs text-gray-400 mt-1">{formData.message.length}/2000</span>
+                    </div>
                   </div>
+
+                  {formStatus === 'success' && (
+                    <p className="text-green-600 text-sm font-medium" role="status">
+                      ✓ Message sent! We'll be in touch soon.
+                    </p>
+                  )}
+                  {formStatus === 'error' && (
+                    <p className="text-red-500 text-sm font-medium" role="alert">
+                      Please wait before submitting again, or check your inputs.
+                    </p>
+                  )}
+
                   <motion.button
                     type="submit"
-                    className="w-full py-4 gradient-bg text-white font-semibold rounded-xl shadow-lg hover:shadow-glow-lg transition-all duration-300 flex items-center justify-center gap-2"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    disabled={formStatus === 'submitting'}
+                    className="w-full py-4 gradient-bg text-white font-semibold rounded-xl shadow-lg hover:shadow-glow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    whileHover={{ scale: formStatus === 'submitting' ? 1 : 1.02 }}
+                    whileTap={{ scale: formStatus === 'submitting' ? 1 : 0.98 }}
                   >
-                    Send Message
+                    {formStatus === 'submitting' ? 'Sending...' : 'Send Message'}
                     <ArrowRight className="w-5 h-5" />
                   </motion.button>
                 </div>
