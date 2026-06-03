@@ -36,4 +36,3 @@ secrets.*
 config.secret.*
 service-account*.json
 firebase*.json
-.bolt/
