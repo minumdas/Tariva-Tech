@@ -41,7 +41,7 @@ const services = [
   {
     icon: Package,
     title: 'Specialized WMS & OMS',
-    description: 'Expert implementation and customization of IBM Sterling Warehouse and Order Management Systems.',
+    description: 'Expert implementation and customization of Warehouse and Order Management Systems.',
     features: ['WMS Implementation', 'OMS Configuration', 'Integration Services', 'Custom Development'],
     color: 'from-emerald-500 to-green-500',
   },
@@ -269,7 +269,7 @@ function WarehouseFlowSection() {
             <span className="gradient-text">Operations</span>
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base">
-            Real-time visualization of IBM Sterling WMS & OMS orchestrating warehouse operations
+            Real-time visualization of WMS & OMS orchestrating warehouse operations
           </p>
         </motion.div>
 
@@ -1274,10 +1274,10 @@ function App() {
                 Specialized Expertise
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                IBM Sterling WMS & OMS Specialists
+                WMS & OMS Specialists
               </h2>
               <p className="text-gray-600 text-lg mb-8 leading-relaxed">
-                Our certified experts deliver world-class IBM Sterling implementations that
+                Our certified experts deliver world-class implementations that
                 revolutionize warehouse operations and order management. We bring deep industry
                 knowledge to optimize your supply chain technology stack.
               </p>
