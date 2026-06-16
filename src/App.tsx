@@ -10,7 +10,7 @@ import {
   Radio, Check
 } from 'lucide-react';
 
-const navItems = ['Services', 'Warehouse Flow', 'IBM Sterling', 'Expertise', 'Team', 'Contact'];
+const navItems = ['Services', 'Warehouse Flow', 'IBM Sterling', 'Expertise', 'Contact'];
 
 const sectionId = (label: string) => label.toLowerCase().trim().replace(/\s+/g, '-');
 
@@ -40,7 +40,7 @@ const services = [
   },
   {
     icon: Package,
-    title: 'IBM Sterling WMS & OMS',
+    title: 'Specialized WMS & OMS',
     description: 'Expert implementation and customization of IBM Sterling Warehouse and Order Management Systems.',
     features: ['WMS Implementation', 'OMS Configuration', 'Integration Services', 'Custom Development'],
     color: 'from-emerald-500 to-green-500',
@@ -1416,36 +1416,7 @@ function App() {
           </div>
         </div>
       </section>
-
-      {/* Team Section */}
-      <section id="team" className="py-24 px-4 sm:px-6 lg:px-8 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-50/20 to-transparent" />
-
-        <div className="relative max-w-7xl mx-auto">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <span className="inline-block px-4 py-1 rounded-full bg-accent-100 text-accent-700 text-sm font-medium mb-4">
-              Our Team
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Meet Our Experts
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Industry veterans with decades of combined experience in enterprise IT solutions
-            </p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {team.map((member, index) => (
-              <TeamCard key={member.name} member={member} index={index} />
-            ))}
-          </div>
-        </div>
-      </section>
+  
 
       {/* Contact Section */}
       <section id="contact" className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
