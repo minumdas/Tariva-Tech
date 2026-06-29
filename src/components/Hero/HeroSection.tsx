@@ -90,7 +90,7 @@ export function HeroSection({ heroRef, heroOpacity, heroScale, x, y }: HeroSecti
             </a>
           </motion.div>
 
-          <AutomationJourney />
+         
         </div>
 
         <motion.div

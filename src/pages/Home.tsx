@@ -9,6 +9,7 @@ import { TechnologiesSection } from '../components/Technologies/TechnologiesSect
 import { ContactSection } from '../components/Contact/ContactSection';
 import { Footer } from '../components/Footer/Footer';
 import { navItems, sectionId } from '../data/content';
+import { AutomationJourney } from '../components/AutomationJourney/AutomationJourney';
 
 export function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -101,7 +102,9 @@ export function Home() {
         scrolled={scrolled}
       />
       <HeroSection heroRef={heroRef} heroOpacity={heroOpacity} heroScale={heroScale} x={x} y={y} />
+      
       <WarehouseFlowSection />
+       <AutomationJourney />
       <ServicesSection />
       <AboutSection />
       <TechnologiesSection />
