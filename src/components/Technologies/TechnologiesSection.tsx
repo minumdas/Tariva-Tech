@@ -46,9 +46,9 @@ export function TechnologiesSection() {
             transition={{ duration: 0.6 }}
           >
             {[
-              { icon: Award, title: 'Certified Professionals', desc: 'IBM Sterling certified architects and developers' },
-              { icon: TrendingUp, title: 'Proven Track Record', desc: '150+ successful enterprise implementations' },
-              { icon: Users, title: 'Dedicated Team', desc: '25+ experienced professionals worldwide' },
+              { icon: Award, title: 'Skilled Professionals', desc: 'Experienced team delivering enterprise application support and development services' },
+              { icon: TrendingUp, title: 'Enterprise Implementation Experience', desc: 'Hands-on experience in multiple large-scale application support environments' },
+              { icon: Users, title: 'Dedicated Team', desc: 'A team of professionals focused on resolving issues and ensuring system stability' },
               { icon: Clock, title: '24/7 Support', desc: 'Round-the-clock application support services' },
             ].map((item, index) => (
               <motion.div

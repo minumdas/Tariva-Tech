@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
-import { Truck, ScanLine, Database, Forklift, Box, Package, ShoppingCart, Radio, CheckCircle2 } from 'lucide-react';
+import { Truck, ScanLine, Database, Forklift, Box, Package, ShoppingCart, Radio, CheckCircle2, Zap, Clock, Boxes } from 'lucide-react';
 
 export function WarehouseBox({ delay = 0, size = 'sm' }: { delay?: number; size?: 'sm' | 'md' }) {
   const boxSize = size === 'sm' ? 'w-5 h-4' : 'w-7 h-5';
@@ -79,6 +79,65 @@ function StorageRack({ filled = 0, active = false }: { filled?: number; active?:
   );
 }
 
+function AnimatedConveyor({ active = false }: { active?: boolean }) {
+  return (
+    <div className="relative flex flex-col items-center justify-center h-full gap-2">
+      {/* Conveyor Belt */}
+      <div className="w-full flex-1 flex items-center justify-center px-1 sm:px-2">
+        <div className="relative w-full h-16 rounded-lg bg-gradient-to-r from-gray-800 to-gray-900 overflow-hidden shadow-lg border border-gray-700">
+          {/* Belt motion background */}
+          <motion.div
+            className="absolute inset-0 bg-repeat-x opacity-30"
+            style={{
+              backgroundImage: `repeating-linear-gradient(
+                90deg,
+                #4b5563 0px,
+                #4b5563 10px,
+                #374151 10px,
+                #374151 20px
+              )`,
+            }}
+            animate={active ? { x: [-20, 0] } : { x: 0 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+
+          {/* Moving packages on conveyor */}
+          {[0, 1, 2].map((item) => (
+            <motion.div
+              key={item}
+              className="absolute top-1/2 -translate-y-1/2 w-6 h-5 sm:w-8 sm:h-6 rounded-md bg-gradient-to-br from-primary-400 to-cyan-500 shadow-lg flex items-center justify-center border border-white/20"
+              animate={active ? { x: ['-50%', '110%'] } : { x: '-50%' }}
+              transition={{
+                duration: 2.5,
+                delay: item * 0.8,
+                repeat: Infinity,
+                ease: 'linear',
+              }}
+            >
+              <motion.div animate={{ rotate: active ? 360 : 0 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
+                <Box className="w-3 sm:w-4 h-3 sm:h-4 text-white" />
+              </motion.div>
+            </motion.div>
+          ))}
+
+          {/* Conveyor side decorations */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500" />
+          <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500" />
+        </div>
+      </div>
+
+      {/* Conveyor label */}
+      <motion.div
+        className="text-[10px] sm:text-xs font-bold text-gray-700 bg-white/70 px-2 py-0.5 rounded-full"
+        animate={active ? { scale: [1, 1.05, 1] } : {}}
+        transition={{ duration: 1, repeat: Infinity }}
+      >
+        Conveyor
+      </motion.div>
+    </div>
+  );
+}
+
 export function WarehouseFlowSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
@@ -90,10 +149,10 @@ export function WarehouseFlowSection() {
   const parallaxY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
-    const zones = ['inbound', 'receiving', 'storage', 'picking', 'packing', 'dispatch'];
+    const zones = ['inbound', 'receiving', 'storage', 'picking', 'packing', 'conveyor', 'dispatch'];
     const interval = setInterval(() => {
-      setActiveZone(zones[Math.floor(Date.now() / 4000) % zones.length]);
-    }, 4000);
+      setActiveZone(zones[Math.floor(Date.now() / 3500) % zones.length]);
+    }, 3500);
     setActiveZone('inbound');
     return () => clearInterval(interval);
   }, []);
@@ -155,7 +214,7 @@ export function WarehouseFlowSection() {
           <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base">Real-time visualization of WMS & OMS orchestrating warehouse operations</p>
         </motion.div>
 
-        <motion.div className="glass-dark rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-6 shadow-2xl relative" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} style={{ minHeight: 380, maxHeight: 450 }}>
+        <motion.div className="glass-dark rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-6 shadow-2xl relative" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} style={{ minHeight: 420, maxHeight: 520 }}>
           <div className="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden">
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
           </div>
@@ -176,6 +235,7 @@ export function WarehouseFlowSection() {
           </div>
 
           <div className="relative grid grid-cols-12 gap-2 sm:gap-3" style={{ height: 'calc(100% - 50px)' }}>
+            {/* Inbound */}
             <div className="col-span-2 flex flex-col gap-2 relative">
               <motion.div className={`relative glass rounded-xl p-2 flex-1 flex flex-col items-center justify-center ${activeZone === 'inbound' ? 'ring-2 ring-primary-400 shadow-glow' : ''}`} animate={activeZone === 'inbound' ? { scale: [1, 1.02, 1] } : {}} whileHover={{ scale: 1.03 }} transition={{ duration: 2, repeat: Infinity }}>
                 <motion.div className="w-10 sm:w-12 h-6 sm:h-7 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg flex items-center justify-center mb-1" animate={{ x: activeZone === 'inbound' ? [0, 3, 0] : 0 }} transition={{ duration: 1.5, repeat: Infinity }}>
@@ -206,7 +266,8 @@ export function WarehouseFlowSection() {
               </motion.div>
             </div>
 
-            <div className="col-span-3 relative">
+            {/* Storage */}
+            <div className="col-span-2 relative">
               <motion.div className={`h-full glass rounded-xl p-2 sm:p-3 flex flex-col ${activeZone === 'storage' ? 'ring-2 ring-teal-400 shadow-glow' : ''}`} whileHover={{ scale: 1.02 }}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] sm:text-xs font-bold text-gray-700">Storage Racks</span>
@@ -216,23 +277,24 @@ export function WarehouseFlowSection() {
                   </motion.div>
                 </div>
 
-                <div className="flex-1 grid grid-cols-4 gap-1.5">
-                  {[4, 3, 4, 3, 4, 2, 3, 4, 2, 3, 4, 3].map((filled, i) => (
-                    <StorageRack key={i} filled={filled} active={activeZone === 'storage' && i < 4} />
+                <div className="flex-1 grid grid-cols-4 gap-1">
+                  {[4, 3, 4, 3, 4, 2, 3, 4].map((filled, i) => (
+                    <StorageRack key={i} filled={filled} active={activeZone === 'storage' && i < 3} />
                   ))}
                 </div>
 
-                <motion.div className="absolute bottom-2 left-1/2 -translate-x-1/2" animate={{ x: [-20, 20, -20] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}>
-                  <div className="w-6 sm:w-8 h-4 sm:h-5 bg-gradient-to-r from-amber-400 to-orange-500 rounded shadow-md flex items-center justify-center">
+                <motion.div className="absolute bottom-2 left-1/2 -translate-x-1/2" animate={{ x: [-15, 15, -15] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}>
+                  <div className="w-6 sm:w-7 h-4 sm:h-5 bg-gradient-to-r from-amber-400 to-orange-500 rounded shadow-md flex items-center justify-center">
                     <Forklift className="w-3 sm:w-4 h-3 sm:h-4 text-white" />
                   </div>
                 </motion.div>
 
-                <ZoneLabel label="Aisle 4" active={activeZone === 'storage'} position="bottom" />
+                <ZoneLabel label="Aisle" active={activeZone === 'storage'} position="bottom" />
               </motion.div>
             </div>
 
-            <div className="col-span-3 relative">
+            {/* Picking */}
+            <div className="col-span-2 relative">
               <motion.div className={`h-full glass rounded-xl p-2 sm:p-3 flex flex-col justify-between ${activeZone === 'picking' ? 'ring-2 ring-amber-400 shadow-glow' : ''}`} whileHover={{ scale: 1.02 }}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] sm:text-xs font-bold text-gray-700">Picking</span>
@@ -242,7 +304,7 @@ export function WarehouseFlowSection() {
                   </motion.div>
                 </div>
 
-                <div className="flex-1 flex items-center justify-center gap-1.5">
+                <div className="flex-1 flex items-center justify-center gap-1">
                   {[1, 2, 3].map((item) => (
                     <motion.div key={item} className="w-5 sm:w-6 h-5 sm:h-6 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 shadow-sm flex items-center justify-center" animate={activeZone === 'picking' ? { y: [0, -3, 0], scale: [1, 1.05, 1] } : {}} transition={{ duration: 1.5, delay: item * 0.15, repeat: Infinity }}>
                       <Package className="w-3 h-3 text-white" />
@@ -265,7 +327,49 @@ export function WarehouseFlowSection() {
               </motion.div>
             </div>
 
-            <div className="col-span-3 relative">
+            {/* Packing */}
+            <div className="col-span-2 relative">
+              <motion.div className={`h-full glass rounded-xl p-2 sm:p-3 flex flex-col justify-between ${activeZone === 'packing' ? 'ring-2 ring-purple-400 shadow-glow' : ''}`} whileHover={{ scale: 1.02 }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] sm:text-xs font-bold text-gray-700">Packing</span>
+                  <motion.div className="flex items-center gap-1 text-[9px] text-purple-600" animate={activeZone === 'packing' ? { scale: [1, 1.1, 1] } : {}} transition={{ duration: 1, repeat: Infinity }}>
+                    <Boxes className="w-3 h-3" />
+                    <span>12</span>
+                  </motion.div>
+                </div>
+
+                <div className="flex-1 flex flex-col items-center justify-center gap-2">
+                  {[1, 2].map((row) => (
+                    <div key={row} className="flex gap-1">
+                      {[1, 2].map((col) => (
+                        <motion.div key={col} className="w-5 sm:w-6 h-5 sm:h-6 rounded-md bg-gradient-to-br from-purple-400 to-indigo-500 shadow-sm flex items-center justify-center" animate={activeZone === 'packing' ? { scale: [1, 1.08, 1], rotate: [0, 2, -2, 0] } : {}} transition={{ duration: 2, delay: (row - 1) * 0.2 + (col - 1) * 0.1, repeat: Infinity }}>
+                          <Box className="w-3 h-3 text-white" />
+                        </motion.div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center justify-between text-[9px] text-gray-500">
+                    <span>Pack queue</span>
+                    <span className="font-semibold text-gray-700">12 orders</span>
+                  </div>
+                </div>
+
+                <ZoneLabel label="Pack Area" active={activeZone === 'packing'} position="bottom" />
+              </motion.div>
+            </div>
+
+            {/* Conveyor */}
+            <div className="col-span-2 relative">
+              <motion.div className={`h-full glass rounded-xl p-1 sm:p-2 flex flex-col items-center justify-center ${activeZone === 'conveyor' ? 'ring-2 ring-orange-400 shadow-glow' : ''}`} whileHover={{ scale: 1.02 }}>
+                <AnimatedConveyor active={activeZone === 'conveyor'} />
+              </motion.div>
+            </div>
+
+            {/* Dispatch */}
+            <div className="col-span-2 relative">
               <motion.div className={`h-full glass rounded-xl p-2 sm:p-3 flex flex-col ${activeZone === 'dispatch' ? 'ring-2 ring-green-400 shadow-glow' : ''}`} whileHover={{ scale: 1.02 }}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] sm:text-xs font-bold text-gray-700">Dispatch</span>
@@ -299,6 +403,45 @@ export function WarehouseFlowSection() {
               </motion.div>
             </div>
           </div>
+        </motion.div>
+
+        {/* Bottom Metrics */}
+        <motion.div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <motion.div className="glass rounded-xl p-3 sm:p-4 text-center" whileHover={{ scale: 1.03 }}>
+            <motion.div className="flex items-center justify-center gap-1.5 mb-2" animate={{ rotate: [0, 5, -5, 0] }} transition={{ duration: 3, repeat: Infinity }}>
+              <Clock className="w-4 sm:w-5 h-4 sm:h-5 text-primary-500" />
+              <span className="text-xs sm:text-sm text-gray-600">Cycle Time</span>
+            </motion.div>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">2.5 hrs</p>
+            <p className="text-[10px] text-green-600 font-semibold">-15%</p>
+          </motion.div>
+
+          <motion.div className="glass rounded-xl p-3 sm:p-4 text-center" whileHover={{ scale: 1.03 }}>
+            <motion.div className="flex items-center justify-center gap-1.5 mb-2" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+              <Zap className="w-4 sm:w-5 h-4 sm:h-5 text-cyan-500" />
+              <span className="text-xs sm:text-sm text-gray-600">Units Today</span>
+            </motion.div>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">12,450</p>
+            <p className="text-[10px] text-green-600 font-semibold">+8%</p>
+          </motion.div>
+
+          <motion.div className="glass rounded-xl p-3 sm:p-4 text-center" whileHover={{ scale: 1.03 }}>
+            <motion.div className="flex items-center justify-center gap-1.5 mb-2" animate={{ y: [0, -2, 0] }} transition={{ duration: 2.5, repeat: Infinity }}>
+              <Truck className="w-4 sm:w-5 h-4 sm:h-5 text-orange-500" />
+              <span className="text-xs sm:text-sm text-gray-600">Trucks</span>
+            </motion.div>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">42</p>
+            <p className="text-[10px] text-gray-500 font-semibold">RTG</p>
+          </motion.div>
+
+          <motion.div className="glass rounded-xl p-3 sm:p-4 text-center" whileHover={{ scale: 1.03 }}>
+            <motion.div className="flex items-center justify-center gap-1.5 mb-2" animate={{ opacity: [0.7, 1, 0.7] }} transition={{ duration: 2, repeat: Infinity }}>
+              <CheckCircle2 className="w-4 sm:w-5 h-4 sm:h-5 text-green-500" />
+              <span className="text-xs sm:text-sm text-gray-600">Accuracy</span>
+            </motion.div>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">99.8%</p>
+            <p className="text-[10px] text-gray-500 font-semibold">Target: 99.5%</p>
+          </motion.div>
         </motion.div>
       </div>
     </section>

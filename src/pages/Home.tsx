@@ -10,6 +10,7 @@ import { ContactSection } from '../components/Contact/ContactSection';
 import { Footer } from '../components/Footer/Footer';
 import { navItems, sectionId } from '../data/content';
 import { AutomationJourney } from '../components/AutomationJourney/AutomationJourney';
+import emailjs from "@emailjs/browser";
 
 export function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -41,21 +42,55 @@ export function Home() {
     if (formErrors[name]) setFormErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      setFormStatus('error');
-      return;
-    }
-    setFormStatus('submitting');
-    lastSubmitRef.current = Date.now();
-    setTimeout(() => {
-      setFormStatus('success');
-      setFormData({ name: '', email: '', service: '', message: '', honeypot: '' });
-    }, 1200);
-  };
+ const handleFormSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const errors = validateForm();
+
+  if (Object.keys(errors).length > 0) {
+    setFormErrors(errors);
+    setFormStatus("error");
+    return;
+  }
+
+  setFormStatus("submitting");
+
+  try {
+    await emailjs.send(
+      "service_minu",     
+      "template_d971piv",     
+      {
+        name: formData.name,
+        email: formData.email,
+        service: formData.service,
+        message: formData.message,
+      },
+      "DApq2ZUOyPuFWaAes"       
+    );
+
+    setFormStatus("success");
+
+    setFormData({
+      name: "",
+      email: "",
+      service: "",
+      message: "",
+      honeypot: "",
+    });
+
+    setFormErrors({});
+  } catch (error) {
+  console.error("EmailJS Error:", error);
+
+  if (error instanceof Error) {
+    alert(error.message);
+  } else {
+    alert(JSON.stringify(error));
+  }
+
+  setFormStatus("error");
+}
+};
 
   const handleMobileNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
