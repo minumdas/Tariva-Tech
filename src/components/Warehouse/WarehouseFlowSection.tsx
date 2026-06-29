@@ -79,54 +79,150 @@ function StorageRack({ filled = 0, active = false }: { filled?: number; active?:
   );
 }
 
+const BELT_LOOP_S = 5;
+
+const PACKAGE_SLOTS = [
+  { left: '5%', w: 'w-5 sm:w-6', h: 'h-4 sm:h-5', color: '#b45309' },
+  { left: '20%', w: 'w-6 sm:w-7', h: 'h-4 sm:h-5', color: '#c2410c' },
+  { left: '36%', w: 'w-5 sm:w-6', h: 'h-5 sm:h-6', color: '#a16207' },
+  { left: '52%', w: 'w-6 sm:w-7', h: 'h-4 sm:h-5', color: '#b45309' },
+  { left: '68%', w: 'w-5 sm:w-5', h: 'h-4 sm:h-4', color: '#ca8a04' },
+  { left: '83%', w: 'w-6 sm:w-7', h: 'h-5 sm:h-5', color: '#c2410c' },
+];
+
+function CartonBox({ left, w, h, color }: { left: string; w: string; h: string; color: string }) {
+  return (
+    <div className="absolute bottom-0" style={{ left }}>
+      <div className="relative">
+        {/* Top face — sits on belt */}
+        <div
+          className={`absolute -top-[3px] left-[3px] right-[3px] h-[3px] rounded-t-sm`}
+          style={{ background: `linear-gradient(90deg, ${color}cc, ${color}99)`, transform: 'perspective(40px) rotateX(50deg)' }}
+        />
+        {/* Carton body — side profile */}
+        <div
+          className={`${w} ${h} rounded-[2px] relative`}
+          style={{
+            background: `linear-gradient(180deg, ${color} 0%, ${color}dd 55%, ${color}99 100%)`,
+            boxShadow: '1px 2px 4px rgba(0,0,0,0.35)',
+            borderLeft: '1px solid rgba(0,0,0,0.15)',
+            borderRight: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <div className="absolute top-[40%] left-0 right-0 h-[2px] bg-black/12" />
+          <div className="absolute top-[42%] left-[15%] right-[15%] h-[1px] bg-amber-200/25" />
+        </div>
+        {/* Contact shadow on belt */}
+        <div className="absolute -bottom-px left-[10%] right-[10%] h-[2px] rounded-full bg-black/30 blur-[1px]" />
+      </div>
+    </div>
+  );
+}
+
+function BeltSegment() {
+  return (
+    <div className="relative w-1/2 h-full flex-shrink-0">
+      {/* Rubber modular belt — moves with strip */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundColor: '#1c1917',
+          backgroundImage: `
+            repeating-linear-gradient(
+              90deg,
+              #292524 0px,
+              #292524 10px,
+              #1c1917 10px,
+              #1c1917 11px,
+              #3f3f46 11px,
+              #3f3f46 21px,
+              #27272a 21px,
+              #27272a 22px
+            )
+          `,
+        }}
+      />
+      <div className="absolute inset-x-0 top-0 h-px bg-white/[0.07]" />
+      <div className="absolute inset-x-0 bottom-0 h-1 bg-black/30" />
+      {PACKAGE_SLOTS.map((slot, i) => (
+        <CartonBox key={i} {...slot} />
+      ))}
+    </div>
+  );
+}
+
+function DriveRoller({ side, active }: { side: 'left' | 'right'; active: boolean }) {
+  const pos = side === 'left' ? 'left-0' : 'right-0';
+  return (
+    <motion.div
+      className={`absolute ${pos} bottom-[10px] w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] rounded-full z-20`}
+      style={{
+        background: 'radial-gradient(circle at 30% 30%, #a8a29e, #57534e 55%, #292524)',
+        boxShadow: 'inset 0 -3px 5px rgba(0,0,0,0.45), 0 2px 5px rgba(0,0,0,0.35)',
+      }}
+      animate={active ? { rotate: side === 'left' ? 360 : -360 } : {}}
+      transition={{ duration: BELT_LOOP_S, repeat: Infinity, ease: 'linear' }}
+    >
+      {[0, 60, 120].map((deg) => (
+        <div
+          key={deg}
+          className="absolute left-1/2 top-0 bottom-0 w-px bg-stone-800/60 origin-center"
+          style={{ transform: `translateX(-50%) rotate(${deg}deg)` }}
+        />
+      ))}
+      <div className="absolute inset-[3px] rounded-full border border-stone-600/40 bg-stone-700/30" />
+    </motion.div>
+  );
+}
+
 function AnimatedConveyor({ active = false }: { active?: boolean }) {
   return (
     <div className="relative flex flex-col items-center justify-center h-full gap-2">
-      {/* Conveyor Belt */}
       <div className="w-full flex-1 flex items-center justify-center px-1 sm:px-2">
-        <div className="relative w-full h-16 rounded-lg bg-gradient-to-r from-gray-800 to-gray-900 overflow-hidden shadow-lg border border-gray-700">
-          {/* Belt motion background */}
-          <motion.div
-            className="absolute inset-0 bg-repeat-x opacity-30"
-            style={{
-              backgroundImage: `repeating-linear-gradient(
-                90deg,
-                #4b5563 0px,
-                #4b5563 10px,
-                #374151 10px,
-                #374151 20px
-              )`,
-            }}
-            animate={active ? { x: [-20, 0] } : { x: 0 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          />
+        <div className="relative w-full">
+          {/* Support frame */}
+          <div className="absolute -bottom-0.5 left-2 right-2 h-2 rounded-b bg-gradient-to-b from-stone-600 to-stone-800" />
+          <div className="absolute bottom-1 left-1 w-1.5 h-3 bg-stone-500 rounded-b-sm" />
+          <div className="absolute bottom-1 right-1 w-1.5 h-3 bg-stone-500 rounded-b-sm" />
 
-          {/* Moving packages on conveyor */}
-          {[0, 1, 2].map((item) => (
-            <motion.div
-              key={item}
-              className="absolute top-1/2 -translate-y-1/2 w-6 h-5 sm:w-8 sm:h-6 rounded-md bg-gradient-to-br from-primary-400 to-cyan-500 shadow-lg flex items-center justify-center border border-white/20"
-              animate={active ? { x: ['-50%', '110%'] } : { x: '-50%' }}
-              transition={{
-                duration: 2.5,
-                delay: item * 0.8,
-                repeat: Infinity,
-                ease: 'linear',
+          <div className="relative h-[68px] sm:h-[76px]">
+            <DriveRoller side="left" active={active} />
+            <DriveRoller side="right" active={active} />
+
+            {/* Belt track between rollers */}
+            <div
+              className="absolute left-[14px] right-[14px] sm:left-4 sm:right-4 bottom-[10px] h-[26px] sm:h-[28px] overflow-hidden rounded-sm z-10"
+              style={{
+                boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06)',
+                borderTop: '2px solid #78716c',
+                borderBottom: '2px solid #44403c',
               }}
             >
-              <motion.div animate={{ rotate: active ? 360 : 0 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
-                <Box className="w-3 sm:w-4 h-3 sm:h-4 text-white" />
-              </motion.div>
-            </motion.div>
-          ))}
+              {/* Side guide rails */}
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] z-20 bg-gradient-to-r from-amber-500 to-amber-600 shadow-sm" />
+              <div className="absolute right-0 top-0 bottom-0 w-[3px] z-20 bg-gradient-to-l from-amber-500 to-amber-600 shadow-sm" />
 
-          {/* Conveyor side decorations */}
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500" />
-          <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500" />
+              {/* Belt + packages — single moving strip (real conveyor physics) */}
+              <motion.div
+                className="flex h-full will-change-transform"
+                style={{ width: '200%' }}
+                animate={active ? { x: ['0%', '-50%'] } : { x: '0%' }}
+                transition={active ? { duration: BELT_LOOP_S, repeat: Infinity, ease: 'linear' } : { duration: 0.3 }}
+              >
+                <BeltSegment />
+                <BeltSegment />
+              </motion.div>
+            </div>
+
+            {/* Belt return path hint (underneath) */}
+            <div
+              className="absolute left-[18px] right-[18px] bottom-[6px] h-[3px] rounded-full bg-stone-800/60"
+              style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)' }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Conveyor label */}
       <motion.div
         className="text-[10px] sm:text-xs font-bold text-gray-700 bg-white/70 px-2 py-0.5 rounded-full"
         animate={active ? { scale: [1, 1.05, 1] } : {}}

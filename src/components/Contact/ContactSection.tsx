@@ -129,10 +129,10 @@ export function ContactSection({ formData, formErrors, formStatus, handleFormCha
                     className={`w-full px-4 py-3 rounded-xl bg-white/50 border ${formErrors.service ? 'border-red-400' : 'border-gray-200'} focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all`}
                   >
                     <option value="">Select a service</option>
-                    <option value="qa">QA Testing</option>
-                    <option value="web">Web Development</option>
-                    <option value="support">Application Support</option>
-                    <option value="ibm">IBM Sterling WMS/OMS</option>
+                    <option value="QA Testing">QA Testing</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Application Support">Application Support</option>
+                    <option value="IBM Sterling WMS/OMS">IBM Sterling WMS/OMS</option>  
                   </select>
                   {formErrors.service && <p id="service-error" className="text-red-500 text-xs mt-1" role="alert">{formErrors.service}</p>}
                 </div>

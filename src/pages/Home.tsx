@@ -139,10 +139,11 @@ export function Home() {
       <HeroSection heroRef={heroRef} heroOpacity={heroOpacity} heroScale={heroScale} x={x} y={y} />
       
       <WarehouseFlowSection />
-       <AutomationJourney />
+       
       <ServicesSection />
       <AboutSection />
       <TechnologiesSection />
+      <AutomationJourney />
       <ContactSection
         formData={formData}
         formErrors={formErrors}
