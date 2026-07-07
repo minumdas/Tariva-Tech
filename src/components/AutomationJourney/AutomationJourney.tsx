@@ -50,14 +50,14 @@ const STEPS: Step[] = [
   },
   {
     title: 'Robot Framework',
-    description: 'Build keyword-driven test suites with reusable automation libraries.',
+    description: 'Build Page Object Model design pattern with keyword-driven approach.',
     icon: Bot,
     color: 'text-blue-600',
     bg: 'bg-blue-50 border-blue-200',
   },
   {
-    title: 'Selenium Testing',
-    description: 'Automate browser interactions across web applications reliably.',
+    title: 'Test Data Management',
+    description: 'Separation of test scripts, test data with framework making tests easier to fix, update, and scale.',
     icon: Monitor,
     color: 'text-teal-600',
     bg: 'bg-teal-50 border-teal-200',
@@ -129,7 +129,7 @@ export function AutomationJourney() {
             See Automation in Action
           </span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-            Robot Framework + Selenium Lifecycle
+            Test Automation Framework Design
           </h2>
           <p className="text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
             A clear, end-to-end flow from client request to continuous improvement.
