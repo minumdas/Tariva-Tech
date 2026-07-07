@@ -11,6 +11,7 @@ import { Footer } from '../components/Footer/Footer';
 import { navItems, sectionId } from '../data/content';
 import { AutomationJourney } from '../components/AutomationJourney/AutomationJourney';
 import emailjs from "@emailjs/browser";
+import {AboutUs} from '../components/About/AboutUs';
 
 export function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -141,6 +142,7 @@ export function Home() {
       <WarehouseFlowSection />
        
       <ServicesSection />
+       <AboutUs />
       <AboutSection />
       <TechnologiesSection />
       <AutomationJourney />

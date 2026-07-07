@@ -14,9 +14,8 @@ type NavbarProps = {
 export function Navbar({ navItems, sectionId, mobileMenuOpen, setMobileMenuOpen, onNavClick, scrolled }: NavbarProps) {
   return (
     <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'glass-dark shadow-lg' : 'bg-transparent'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'glass-dark shadow-lg' : 'bg-transparent'
+        }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
@@ -32,7 +31,7 @@ export function Navbar({ navItems, sectionId, mobileMenuOpen, setMobileMenuOpen,
             </span>
           </a>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-4 lg:gap-6 whitespace-nowrap">
             {navItems.map((item) => (
               <a
                 key={item}
@@ -44,7 +43,23 @@ export function Navbar({ navItems, sectionId, mobileMenuOpen, setMobileMenuOpen,
               </a>
             ))}
           </div>
+          <div className="hidden md:flex items-center gap-2 lg:gap-3 whitespace-nowrap">
+           <a
+              href="#automation-journey"
+              className="text-sm px-3 py-2 rounded-full gradient-bg text-white font-medium shadow-sm hover:shadow-glow transition-all duration-300"
+              onClick={(e) => onNavClick(e, '#automation-journey')}
+            >
+              Automation Demo
+            </a>
+              <a
+              href="#warehouse-flow"
+              className="text-sm px-3 py-2 rounded-full border border-primary-500/70 text-primary-600 font-medium hover:bg-primary-500 hover:text-white transition-all duration-300"
+              onClick={(e) => onNavClick(e, '#warehouse-flow')}
+            >
+              WMS Visualization
+            </a>
 
+          </div>
           <div className="hidden md:block">
             <a
               href="#contact"
@@ -83,6 +98,22 @@ export function Navbar({ navItems, sectionId, mobileMenuOpen, setMobileMenuOpen,
                   {item}
                 </a>
               ))}
+             
+              <a
+                href="#automation-journey"
+                className="block text-gray-700 font-medium py-2"
+                onClick={(e) => onNavClick(e, "#automation-journey")}
+              >
+                Automation Demo
+              </a>
+               <a
+                href="#warehouse-flow"
+                className="block text-gray-700 font-medium py-2"
+                onClick={(e) => onNavClick(e, "#warehouse-flow")}
+              >
+                WMS Visualization
+              </a>
+
               <a
                 href="#contact"
                 className="block w-full text-center px-6 py-3 gradient-bg text-white font-medium rounded-full"

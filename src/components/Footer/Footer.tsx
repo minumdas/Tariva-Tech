@@ -65,7 +65,7 @@ export function Footer() {
 
         <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">
-            © 2024 Tariva Technologies Pvt Ltd. All rights reserved.
+            © 2026 Tariva Technologies Pvt Ltd. All rights reserved.
           </p>
           <div className="flex gap-6">
             <a href="#" className="text-gray-400 text-sm hover:text-white transition-colors">

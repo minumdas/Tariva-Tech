@@ -13,7 +13,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-export const navItems = ['Services', 'Warehouse Flow', 'Expertise', 'Contact'];
+export const navItems = ['Services', 'Expertise','About Us', 'Contact'];
 
 export const sectionId = (label: string) => label.toLowerCase().trim().replace(/\s+/g, '-');
 
@@ -98,8 +98,8 @@ export const automationSteps = [
 export const statusBadges = ['✔ Tests Running', '✔ Browser Validation', '✔ Reports Generated', '✔ CI/CD Ready'];
 
 export const contactDetails = [
-  { icon: 'MapPin', text: 'Bangalore, India' },
-  { icon: 'Phone', text: '+91 80 4567 8900' },
+  { icon: 'MapPin', text: 'Kammagondahalli,Bangalore' },
+ 
   { icon: 'Mail', text: 'info@tarivatech.com' },
 ];
 

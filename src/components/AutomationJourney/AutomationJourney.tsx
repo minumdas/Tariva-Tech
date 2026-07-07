@@ -112,7 +112,7 @@ export function AutomationJourney() {
   const CurrentIcon = current.icon;
 
   return (
-    <section className="relative w-full py-14 sm:py-16 px-4 sm:px-6 lg:px-8">
+    <section className="relative w-full py-14 sm:py-16 px-4 sm:px-6 lg:px-8" id="automation-journey">
       <div className="absolute inset-0 bg-gradient-to-b from-primary-50/40 via-transparent to-transparent pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto">

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Mail, MapPin, Phone, Linkedin, Twitter, Github } from 'lucide-react';
+import { ArrowRight, Mail, MapPin, Linkedin, Twitter, Github } from 'lucide-react';
 import type { ChangeEvent, FormEvent } from 'react';
 
 type ContactSectionProps = {
@@ -38,7 +38,7 @@ export function ContactSection({ formData, formErrors, formStatus, handleFormCha
             </p>
 
             <div className="space-y-6">
-              {[{ icon: MapPin, text: 'Bangalore, India' }, { icon: Phone, text: '+91 80 4567 8900' }, { icon: Mail, text: 'info@tarivatech.com' }].map((item, index) => (
+              {[{ icon: MapPin, text: 'Bangalore, India' }, { icon: Mail, text: 'info@tarivatech.com' }].map((item, index) => (
                 <motion.div
                   key={item.text}
                   className="flex items-center gap-4"
