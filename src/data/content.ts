@@ -49,12 +49,16 @@ export const services = [
 ];
 
 export const techStack = [
-  { name: 'React & Next.js', level: 95 },
-  { name: 'IBM Sterling Suite', level: 98 },
-  { name: 'Node.js & Python', level: 90 },
-  { name: 'Cloud (AWS/Azure)', level: 88 },
-  { name: 'Database Systems', level: 92 },
-  { name: 'DevOps & CI/CD', level: 85 },
+  { name: 'Robot Framework', level: 98 },
+  { name: 'Selenium WebDriver', level: 96 },
+  { name: 'Python (Automation)', level: 95 },
+  { name: 'API Testing (Postman/REST Assured)', level: 94 },
+  { name: 'IBM Sterling OMS/WMS', level: 95 },
+  { name: 'SQL & Database Testing', level: 92 },
+  { name: 'Test Automation Framework Design', level: 90 },
+  { name: 'CI/CD (Jenkins, GitHub Actions)', level: 88 },
+  { name: 'Git & Version Control', level: 90 },
+  { name: 'Performance Testing (JMeter)', level: 85 },
 ];
 
 export const team = [

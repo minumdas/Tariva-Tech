@@ -49,7 +49,7 @@ export function Navbar({ navItems, sectionId, mobileMenuOpen, setMobileMenuOpen,
               className="text-sm px-3 py-2 rounded-full gradient-bg text-white font-medium shadow-sm hover:shadow-glow transition-all duration-300"
               onClick={(e) => onNavClick(e, '#automation-journey')}
             >
-              Automation Demo
+              Automation 
             </a>
               <a
               href="#warehouse-flow"
@@ -104,7 +104,7 @@ export function Navbar({ navItems, sectionId, mobileMenuOpen, setMobileMenuOpen,
                 className="block text-gray-700 font-medium py-2"
                 onClick={(e) => onNavClick(e, "#automation-journey")}
               >
-                Automation Demo
+                Automation
               </a>
                <a
                 href="#warehouse-flow"
